@@ -7,8 +7,8 @@
 # svenwilke  
 # with the friendly help of TheImportanceOfBeingErnest on StackOverflow (no copyright claimed)
 # 
-# v0.1 - 2019-11-28
-# v1.0 - 2020-01-31
+# v001 - 2019-11-28
+# v010 - 2020-01-31
 # 
 
 
