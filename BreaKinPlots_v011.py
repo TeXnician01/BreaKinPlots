@@ -10,22 +10,7 @@
 # v001 - 2019-11-28
 # v010 - 2020-01-31
 # v011 - 2020-07-13
-#print("Derzeitig im debug-Modus: Ausgabe des GAUSS-Fits fuer jeden Peak.")
 # 
-
-
-# --------------------------------------------------------
-#                         To-do
-# --------------------------------------------------------
-
-# Gauss-fit all peaks (important on ion trap spectrometers)
-# > Emily Grace Ripka - Data Fitting in Python - http://www.emilygraceripka.com/blog/16
-
-# Report of parameters from input_peaks
-
-# Aggregation of H2O (or other neutrals)
-# > give info in input_p: new column with number of observed aggregates 
-# > add m(H2O) = 18 to all isotopologues and sums over total intensity)
 
 
 # --------------------------------------------------------
@@ -33,10 +18,8 @@
 # --------------------------------------------------------
 
 from timeit import default_timer as timer
-#from numba import njit
 import numpy as np
 import math
-#from lmfit.models import GaussianModel
 
 import matplotlib as mpl
 from matplotlib import rcParams, cycler, mathtext
@@ -105,58 +88,6 @@ def calc_peakvalue(mi: int, ma: int, x: np.ndarray):
     max_intensity = np.max(x[mi:ma, 1])
     max_peak = x[mi+np.argmax(x[mi:ma, 1]), 0]
     return max_peak, max_intensity
-
-def gauss(mi: int, ma: int, interval: float, arr: np.ndarray):
-    # Suche Maximum von x in allen Zeilen von mi bis ma in Spalte 1
-    # Gib' Peak-Maximum, die Zeile des Maximums und das Peak-Integral zurueck
-    
-    #max_peak_range = mi+np.argmax(arr[mi:ma, 1])
-    #max_intensity = np.max(arr[mi:ma, 1])
-    try:
-        max_peak_range = mi+np.argmax(arr[mi:ma, 1])
-    except ValueError:
-        max_peak_range = int(round(((mi+ma)/2), 0))
-    try:
-        max_intensity = np.max(arr[mi:ma, 1])
-    except ValueError:
-        max_intensity = arr[mi, 1]
-    max_peak = arr[max_peak_range, 0]
-
-    #print(max_peak_range, max_intensity, max_peak)
-    
-    # Finde das Peak-Intervall
-    line_number_min = max_peak_range
-    line_number_max = max_peak_range
-    peak_interval_min = max_peak-interval
-    #print(line_number_min, line_number_max)
-
-    while arr[line_number_min, 0] > peak_interval_min:
-        line_number_min -= 1
-
-    while arr[line_number_max, 0] < peak_interval_max:
-        line_number_max += 1
-    #print(line_number_min, line_number_max)
-
-    # Integration
-    # Beginne in der Zeile des Maximums
-    # im Intervall nach unten und oben integrieren
-    mz_x = arr[line_number_min:line_number_max, 0]
-    mz_y = arr[line_number_min:line_number_max, 1]
-    #print(max_peak, mz_x, mz_y)
-
-    model = GaussianModel()
-    params = model.guess(mz_y, x=mz_x)
-
-    result = model.fit(mz_y, params, x=mz_x)
-    result.plot_fit()
-
-    # Activate for Debug-Mode
-    #plt.show()
-    #sys.exit()
-
-    peak_integral = params.valuesdict()['amplitude']
-
-    return max_peak, max_intensity, peak_integral
 
 def calc_peakvalue_integral(mi: int, ma: int, interval: float, x: np.ndarray):
     # Suche Maximum von x in allen Zeilen von mi bis ma in Spalte 1
@@ -357,7 +288,6 @@ integral_or_sum_standard = "SUM"
 
 # q-TOF
 if spectrometer == "tof":
-    #print("\nEin Gauss-Fit und Integration der Peakintensitaeten wird verwendet, um die Kurven zu generieren.")
     print("\nSummation der Peakintensitaeten wird fuer die Auswertung verwendet.")
     integral_or_sum = "SUM"
 # HCT QIT
@@ -365,12 +295,12 @@ if spectrometer == "hct":
     # Nachfrage, ob integriert, summiert oder das Maximum verwendet werden soll
     print("\nSollen Peaks integriert oder aufsummiert werden? Alternativ kann ausschliesslich das Maximum verwendet werden.")
     
-    integral_or_sum = input("Fuer den Gauss-Fit und anschliessende Integration 'GAU', zum Summieren 'SUM' eingeben, Zum Nutzen des Maximums 'MAX' eingeben (Standard: %s). Zum Abbrechen 'ABR' eingeben: " % (integral_or_sum_standard)) or integral_or_sum_standard
+    integral_or_sum = input("Zum Summieren 'SUM' eingeben, Zum Nutzen des Maximums 'MAX' eingeben (Standard: %s). Zum Abbrechen 'ABR' eingeben: " % (integral_or_sum_standard)) or integral_or_sum_standard
 
     while True:
-        if (integral_or_sum == "ABR" or integral_or_sum == "GAU" or integral_or_sum == "SUM" or integral_or_sum == "MAX"):
+        if (integral_or_sum == "ABR" or integral_or_sum == "SUM" or integral_or_sum == "MAX"):
             break
-        integral_or_sum = input("Falsche Eingabe! Bitte 'ABR', 'GAU' oder 'SUM' eingeben: ")
+        integral_or_sum = input("Falsche Eingabe! Bitte 'ABR' oder 'SUM' eingeben: ")
 
     if integral_or_sum == "ABR":
         print("Programm durch Benutzereingabe unterbrochen.")
@@ -514,13 +444,6 @@ for i in range(len(input_f)):
                 # peak_max = calc_peakvalue(line_number_min, line_number_max, mz_list)
 
                 # Fuege dem output_array je nach verwendeter Methode die relative Intensitaet hinzu
-                if integral_or_sum == "GAU":
-                    # Finde das Peak-Maximum und integriere im Peak-Intervall
-                    peak_max_integral = gauss(line_number_min, line_number_max, peak_interval, mz_list)
-                
-                    # Addiere das Integral zum Wert fuer den Peak im output_array
-                    output_array[file_index, output_array_isotope] += peak_max_integral[2]
-
                 if integral_or_sum == "INT":
                     # Finde das Peak-Maximum und integriere im Peak-Intervall
                     peak_max_integral = calc_peakvalue_integral(line_number_min, line_number_max, peak_interval, mz_list)
