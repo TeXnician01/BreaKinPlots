@@ -1,0 +1,41 @@
+# SETTINGS
+# Change only values given in double quotes: ""
+# Possible options are given in square brackets: []
+# NOTE: The square brackets should not be included in the values
+
+# Set the standard path. Separate folders with a semicolon
+# The program will generate the absolute path for this path relative to the program
+path_standard "BreaKinPlots_Demo;FKD099_347-"
+
+# Set the evaluation method
+# [BDC] or [IMR]
+evaluation_standard "BDC"
+
+# Should standard deviations be calculated?
+# Only possible, if two sets of measurements for each x-value have been performed
+# [Y] or [N]
+calc_stdev_standard "Y"
+
+# Should standard deviations be reported in the ouput file?
+# [Y] or [N]
+report_stdev_standard "Y"
+
+# Should the legend from input_peaks be exported?
+# If [Y], an additional file with the suffix "_legend.txt" will be generated
+# [Y] or [N]
+export_with_legend_standard "Y"
+
+# Set the standard method to calculate the peak values.
+# [SUM] summation of all intensities or [MAX] only the maximum peak intensity is used
+calc_method "SUM"
+
+# Set the standard x-axis label (unit)
+# give any unit in form of letters, e.g. [eV] or [ms]
+x_unit_standard "eV"
+
+# Should a figure be generated (only available if calc_stdev_standard is set to N)?
+# [Y] or [N]
+figure_export_standard "N"
+
+# Set the DPI value for figure export
+dpi_standard "800"
