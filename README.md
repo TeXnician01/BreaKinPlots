@@ -1,16 +1,17 @@
 # BreaKinPlots 2.3
 
-# DESCRIPTION
+## DESCRIPTION
 Batch plot breakdown-curve data or kinetic plots from input files in a given folder.
 
-# AUTHORS
+## AUTHORS
 Finn Kraft and Sven Wilke  
 with the friendly help of TheImportanceOfBeingErnest and Thomas Auth
 
-# DISCLAIMER
+## DISCLAIMER
 The script is made available to the user without any guarantee that it is error-free.
 
 ----------------------------------------------------------------------------------------
+## USAGE
 
 1. Download the program "BreaKinPlots#.py" ("#" is the version number, e.g. "2-3") and the corresponding "BreaKinPlots-config.txt"
 2. Place these two files in a folder of your choice. Note that the files need to be moved together, if moved at all. I recommend placing them above the data you want to analyze.
