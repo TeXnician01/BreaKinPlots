@@ -1,6 +1,0 @@
-(1) compound m/z   (2) first isotope peak (3) peak interval (4) peak distance (5) number of isotope peaks
-[LiBr(tBuPhBPin)]- 345.14 0.1 1 7 000000 o full
-(tBuPhBPin)- 260.21 0.1 1 5 FE0000 o none
-[LiBrPh]- 161.97 0.1 1 6 0000FE o none
-[LiBr(OH)]- 101.93 0.1 1 5 008000 o none
-Ph- 77.04 0.1 1 2 800080 o none
