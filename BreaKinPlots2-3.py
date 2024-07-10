@@ -232,8 +232,8 @@ try:
     elif config["export_with_legend_standard"] == "N":
         export_with_legend_standard = False
 
-    if "calc_method" in config:
-        calc_method = config["calc_method"]
+    if "calc_method_standard" in config:
+        calc_method_standard = config["calc_method_standard"]
     
     if "x_unit_standard" in config:
         x_unit_standard = config["dpi_standard"]
@@ -244,7 +244,7 @@ try:
         figure_export = False
 
     if "dpi_standard" in config:
-        dpi_dtandard = config["dpi_standard"]
+        dpi_standard = int(config["dpi_standard"])
 
 except Exception as exc:
     print(f"An error occurred: Possibly the {exc} was not defined properly.")
@@ -325,9 +325,7 @@ for i in range(len(input_f)):
     file_list = np.genfromtxt(os.path.join(config["path_standard"], "%s" % (input_filename)), dtype='U', delimiter=' ', skip_header=1)
 
     # Split the filename extension for export of the output_array as a text file
-    # and then split after "-" 
     filename_split = (os.path.splitext("%s" % (input_filename))[0])
-    #.split("-")[0]
 
     peak_list = np.genfromtxt(os.path.join(config["path_standard"], "%s" % (input_peakfilename)), dtype='float', delimiter=' ', skip_header=1, usecols=(0,1,2,3,4))
 
@@ -426,14 +424,14 @@ for i in range(len(input_f)):
                 # Finde das Peak-Maximum
                 # peak_max = calc_peakvalue(zeilen_zahl_min, zeilen_zahl_max, mz_liste)
 
-                if config["calc_method"] == "SUM":
+                if config["calc_method_standard"] == "SUM":
                     # Find the peak maximum and sum in the peak interval
                     peak_max_sum = calc_peakvalue_sum(line_number_min, line_number_max, peak_interval, mz_list)
                 
                     # Add the sum to the value for the peak in the output_array
                     output_array[file_index, output_array_isotope] += peak_max_sum[2]
                 
-                elif config["calc_method"] == "MAX":
+                elif config["calc_method_standard"] == "MAX":
                     # Find and return the peak maximum
                     peak_max_max = calc_peakvalue_max(line_number_min, line_number_max, mz_list)
                 
@@ -497,11 +495,11 @@ for i in range(len(input_f)):
             output_array = output_array[:, columns]
 
         # Save the output_array in a text file with proper suffix
-        np.savetxt(os.path.join(config["path_standard"], "%s_output_%s%s.txt" % (filename_split, config["calc_method"], stddev_or_not)), output_array, delimiter=' ')
+        np.savetxt(os.path.join(config["path_standard"], "%s_output_%s%s.txt" % (filename_split, config["calc_method_standard"], stddev_or_not)), output_array, delimiter=' ')
 
     elif calc_stdev == False:
         # Save the output_array in a text file with proper suffix
-        np.savetxt(os.path.join(config["path_standard"], "%s_output_%s%s.txt" % (filename_split, config["calc_method"], stddev_or_not)), output_array, delimiter=' ')
+        np.savetxt(os.path.join(config["path_standard"], "%s_output_%s%s.txt" % (filename_split, config["calc_method_standard"], stddev_or_not)), output_array, delimiter=' ')
 
     if export_with_legend_standard == True:
         # List of elements for legend to export the output_array with legend
@@ -526,66 +524,82 @@ for i in range(len(input_f)):
         # WIP option: To delete the original file, use os.remove(file_name) in prepend_line()
 
         legend = " ".join(legend)
-        prepend_line(os.path.join(config["path_standard"], "%s_output_%s%s.txt" % (filename_split, config["calc_method"], stddev_or_not)), legend)
+        prepend_line(os.path.join(config["path_standard"], "%s_output_%s%s.txt" % (filename_split, config["calc_method_standard"], stddev_or_not)), legend)
     
     if figure_export == True:
         figure_suffix = input("\nShould the graphic be exported in eps or png or svg format or combined (.eps and .png)? Please enter epspng, eps, \033[04mpng\033[0m or svg: ") or "png"
         # plot bdc / imr without error bars
-        if calc_stdev == False:
-            # Plot x and y values for each ion
-            for ion in range(1, output_array_size_x):
-                # fill styles
+        
+        # Plot x and y values for each ion
+        for ion in range(1, output_array_size_x):
+            # fill styles
+            try:
                 if (fill_list[ion-1]) == "full":
                     mfcolor = "#%s" % (color_list[ion-1])
-                else:
-                    mfcolor = "none"
+            except IndexError:
+                mfcolor = "none"
 
-                plt.plot(output_array[:,0], output_array[:,ion], clip_on=True, marker="%s" % (marker_list[ion-1]), mfc=mfcolor, mec="#%s" % (color_list[ion-1]), mew=0.85, ls="none", fillstyle="%s" % (fill_list[ion-1]), markerfacecoloralt="#%s" % (color_list[ion-1]), label=r"$\mathregular{%s}$" % (ion_labels[ion-1])) 
-                
-                if export_with_legend_standard == False:
-                    plt.legend(loc='upper left', bbox_to_anchor=(1, 1), frameon=False)
+        # Plotting starts here
+        if calc_stdev == True:
+            # Extract n values
+            n_values = output_array[:, 0]
 
-            # x values
-            print("\nAusgewerteter Datensatz: %s" % (filename_split.strip("_input_files")))
+            # Extract values and errors, assuming pairs of value and y-error
+            values = output_array[:, 1::2]
+            y_errors = output_array[:, 2::2]
 
-            print("\nUp to which x-value should be applied? By default, up to the \033[04mmaximum x-value\033[0m (%.2f) is plotted." % np.max(output_array[:, 0]))
+            # Plotting
+            for i in range(values.shape[1]):
+                plt.errorbar(n_values, values[:, i], yerr=y_errors[:, i], capsize=5, fmt='o')
 
-            xtick_max = float(input("x-Wert: ") or np.max(output_array[:, 0]))
-            ytick_max = input("\nWhich y-limit should be selected? Please enter an integer between 0 and \033[04m100\033[0m: ") or 100
+        if calc_stdev == False:
+            # Extract n values
+            n_values = output_array[:, 0]
 
-            plt.ylim(0, ytick_max)
-            plt.ylabel("Normalized signal intensity / %", labelpad=-3)
+            # Extract values
+            values = output_array[:, 1:]
+ 
+            # Plotting
+            for i in range(values.shape[1]):
+                plt.plot(n_values, values[:, i], 'o')
 
-            plt.xlim(0, xtick_max)
-            if evaluation == "bdc":
-                # x axis label
-                plt.xlabel(r'$E_\mathregular{Lab}$ / %s' % x_unit_standard, labelpad=10)
+        # x values
+        print("\nAusgewerteter Datensatz: %s" % (filename_split.strip("_input_files")))
+
+        # Check and assign x- and y-limits
+        try:
+            xtick_max = float(config["figure_x_standard"])
+        except ValueError:
+            if config["figure_x_standard"] == "MAX":
+                xtick_max = np.max(output_array[:, 0])
+            else: 
+                raise ValueError
+        ytick_max = float(config["figure_y_standard"])
+
+        plt.ylim(0, ytick_max)
+        plt.ylabel("Normalized signal intensity / %", labelpad=-3)
+
+        plt.xlim(0, xtick_max)
+        if evaluation == "bdc":
+            # x axis label
+            plt.xlabel(r'$E_\mathregular{Lab}$ / %s' % x_unit_standard, labelpad=10)
             
-            elif evaluation == "imr":
-                plt.xlabel("$t$ / %s" % x_unit_standard, labelpad=10)
+        elif evaluation == "imr":
+            plt.xlabel("$t$ / %s" % x_unit_standard, labelpad=10)
 
-            plt.gca().xaxis.set_minor_locator(AutoMinorLocator(n=2))
+        plt.gca().xaxis.set_minor_locator(AutoMinorLocator(n=2))
 
-            majors = (0, 100)
-            plt.gca().yaxis.set_major_locator(FixedLocator(majors))
+        majors = (0, ytick_max)
+        plt.gca().yaxis.set_major_locator(FixedLocator(majors))
 
-            if export_with_legend_standard == False:
-                if figure_suffix == "epspng":
-                    plt.savefig(os.path.join(config["path_standard"], "%s_output_%s_legend_noStdDev.eps" % (filename_split, config["calc_method"])), transparent=True, dpi=config["dpi_standard"])
-                    plt.savefig(os.path.join(config["path_standard"], "%s_output_%s_legend_noStdDev.png" % (filename_split, config["calc_method"])), transparent=True, dpi=config["dpi_standard"])
-                
-                else:
-                    plt.savefig(os.path.join(config["path_standard"], "%s_output_%s_legend.%s" % (filename_split, config["calc_method"], figure_suffix)), transparent=True, dpi=config["dpi_standard"])
-                    
-            elif export_with_legend_standard == True:
-                if figure_suffix == "epspng":
-                    plt.savefig(os.path.join(config["path_standard"], "%s_output_%s_noStdDev.eps" % (filename_split, config["calc_method"])), transparent=True, dpi=config["dpi_standard"])
-                    plt.savefig(os.path.join(config["path_standard"], "%s_output_%s_noStdDev.png" % (filename_split, config["calc_method"])), transparent=True, dpi=config["dpi_standard"])
+        if figure_suffix == "epspng":
+            plt.savefig(os.path.join(config["path_standard"], "%s_output_%s%s.eps" % (filename_split, config["calc_method_standard"], stddev_or_not)), transparent=True, dpi=dpi_standard)
+            plt.savefig(os.path.join(config["path_standard"], "%s_output_%s%s.png" % (filename_split, config["calc_method_standard"], stddev_or_not)), transparent=True, dpi=dpi_standard)
 
-                else:
-                    plt.savefig(os.path.join(config["path_standard"], "%s_output_%s_noStdDev.%s" % (filename_split, config["calc_method"], figure_suffix)), transparent=True, dpi=config["dpi_standard"])
+        else:
+            plt.savefig(os.path.join(config["path_standard"], "%s_output_%s%s.%s" % (filename_split, config["calc_method_standard"], stddev_or_not, figure_suffix)), transparent=True, dpi=dpi_standard)
 
-            # Empty image cache, otherwise all previous images will also appear in the next one
-            plt.clf()
+    # Empty image cache, otherwise all previous images will also appear in the next one
+    #plt.clf()
 
 print("Plot and export of %s successful!" % (filename_split.strip("_input_files")))
