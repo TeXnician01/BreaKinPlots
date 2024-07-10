@@ -236,7 +236,7 @@ try:
         calc_method_standard = config["calc_method_standard"]
     
     if "x_unit_standard" in config:
-        x_unit_standard = config["dpi_standard"]
+        x_unit_standard = config["x_unit_standard"]
 
     if config["figure_export_standard"] == "Y":
         figure_export = True
@@ -506,9 +506,9 @@ for i in range(len(input_f)):
         legend = []
 
         # Append X-axis label to legend list
-        if evaluation == "bdc":
+        if evaluation == "BDC":
             legend.append("E_Lab (%s)" % config["x_unit_standard"])
-        elif evaluation == "imr":
+        elif evaluation == "IMR":
             legend.append("t (ms)")
         
         if calc_stdev == True:
@@ -527,8 +527,6 @@ for i in range(len(input_f)):
         prepend_line(os.path.join(config["path_standard"], "%s_output_%s%s.txt" % (filename_split, config["calc_method_standard"], stddev_or_not)), legend)
     
     if figure_export == True:
-        figure_suffix = input("\nShould the graphic be exported in eps or png or svg format or combined (.eps and .png)? Please enter epspng, eps, \033[04mpng\033[0m or svg: ") or "png"
-        # plot bdc / imr without error bars
         
         # Plot x and y values for each ion
         for ion in range(1, output_array_size_x):
@@ -580,11 +578,11 @@ for i in range(len(input_f)):
         plt.ylabel("Normalized signal intensity / %", labelpad=-3)
 
         plt.xlim(0, xtick_max)
-        if evaluation == "bdc":
+        if evaluation == "BDC":
             # x axis label
             plt.xlabel(r'$E_\mathregular{Lab}$ / %s' % x_unit_standard, labelpad=10)
             
-        elif evaluation == "imr":
+        elif evaluation == "IMR":
             plt.xlabel("$t$ / %s" % x_unit_standard, labelpad=10)
 
         plt.gca().xaxis.set_minor_locator(AutoMinorLocator(n=2))
@@ -592,14 +590,9 @@ for i in range(len(input_f)):
         majors = (0, ytick_max)
         plt.gca().yaxis.set_major_locator(FixedLocator(majors))
 
-        if figure_suffix == "epspng":
-            plt.savefig(os.path.join(config["path_standard"], "%s_output_%s%s.eps" % (filename_split, config["calc_method_standard"], stddev_or_not)), transparent=True, dpi=dpi_standard)
-            plt.savefig(os.path.join(config["path_standard"], "%s_output_%s%s.png" % (filename_split, config["calc_method_standard"], stddev_or_not)), transparent=True, dpi=dpi_standard)
+        plt.savefig(os.path.join(config["path_standard"], "%s_output_%s%s.png" % (filename_split, config["calc_method_standard"], stddev_or_not)), transparent=True, dpi=dpi_standard)
 
-        else:
-            plt.savefig(os.path.join(config["path_standard"], "%s_output_%s%s.%s" % (filename_split, config["calc_method_standard"], stddev_or_not, figure_suffix)), transparent=True, dpi=dpi_standard)
-
-    # Empty image cache, otherwise all previous images will also appear in the next one
-    #plt.clf()
+        # Empty image cache, otherwise all previous images will also appear in the next one
+        plt.clf()
 
 print("Plot and export of %s successful!" % (filename_split.strip("_input_files")))
