@@ -2,10 +2,11 @@
 # Change only values given in double quotes: ""
 # Possible options are given in square brackets: []
 # NOTE: The square brackets should not be included in the values
+# NOTE: The program is case sensitive (e.g. write "BDC" not "bdc)
 
 # Set the standard path. Separate folders with a semicolon
 # The program will generate the absolute path for this path relative to the program
-path_standard "BreaKinPlots_Demo;FKD099_347-"
+path_standard "BreaKinPlots_DEMO;FKD099_347-_DEMO"
 
 # Set the evaluation method
 # [BDC] or [IMR]
@@ -27,15 +28,21 @@ export_with_legend_standard "Y"
 
 # Set the standard method to calculate the peak values.
 # [SUM] summation of all intensities or [MAX] only the maximum peak intensity is used
-calc_method "SUM"
+calc_method_standard "SUM"
 
 # Set the standard x-axis label (unit)
 # give any unit in form of letters, e.g. [eV] or [ms]
 x_unit_standard "eV"
 
-# Should a figure be generated (only available if calc_stdev_standard is set to N)?
+# Should a figure (without legend) be generated?
 # [Y] or [N]
-figure_export_standard "N"
+figure_export_standard "Y"
+
+# Figure: Which x- and y-axis maximum should be used?
+# use floats [float]
+figure_x_standard "MAX"
+figure_y_standard "100"
 
 # Set the DPI value for figure export
+# use an integer [int]
 dpi_standard "800"
